@@ -157,9 +157,7 @@ class objects_to_draw_class:
                 return
             if not anim.stop:
                 anim.act()
-        
-    def remove(self, key):
-        del self.list[key]
+
 
     def clear(self):
         self.textures.clear()
