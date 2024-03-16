@@ -1,8 +1,9 @@
 import display as dsp
-#from display import OTD, RES_FORM
 import pygame
 import math
 dsp.init()
+
+from display import OTD, run, RES_FORM
 
 class MyAnim(dsp.Animation):
     def __init__(self, object, radius, count):
@@ -58,13 +59,9 @@ def act():
     sprite.act()
     
     OTD.add_obj(sprite)
-    
     return
     
 
 
 if __name__=="__main__":
-    OTD = dsp.OTD
-    run = dsp.run
-    RES_FORM = dsp.RES_FORM
     dsp.start(prepare, act)
