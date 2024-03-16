@@ -149,8 +149,14 @@ class objects_to_draw_class:
         
     def add_anim(self, anim: Animation) -> Any:
         self.animations.append(anim)
-        
-
+    
+    def update_anims(self):
+        for anim in self.animations:
+            if anim.done:
+                self.animations.remove(anim)
+                return
+            if not anim.stop:
+                anim.act()
         
     def remove(self, key):
         del self.list[key]
@@ -180,6 +186,7 @@ def start(prepare: FunctionType, act: FunctionType):
         while run:
             clock.tick(TICK)
             TICK_COUNTER = (TICK_COUNTER+1)%TICK
+            OTD.update_anims()
             act()
 
             
