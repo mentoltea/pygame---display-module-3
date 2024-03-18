@@ -40,6 +40,7 @@ def init():
     clock = pygame.time.Clock()
     window = pygame.Surface((RES_FORM[0], RES_FORM[1]))
     run = True
+    
 
 
 
@@ -61,7 +62,7 @@ def get_trans_old(Surf, width, height, angle):
 #WINDOW DRAW FUNCTION
 def window_update():
     while 1:
-        global run, clock, FPS, FPS_COUNTER, wn, window, RES_FORM, WIN_X, WIN_Y, OTD
+        global run, clock, FPS, FPS_COUNTER, wn, window, RES_FORM, WIN_X, WIN_Y, OTD_GAME, OTD_MENU, OTD_UI
         if not run:
             break
         clock.tick(FPS)
@@ -69,28 +70,19 @@ def window_update():
         wn.fill((0,0,0))
         window.fill((255,255,255))
 
-        for layer in OTD.layers:
-            window.blit( layer[0], (layer[1], layer[2]) )
-
-        for txt in OTD.textures:
-            txt[0].set_alpha(txt[4])
-            if txt[3]==0 and txt[5]==0 and txt[6]==0:
-                window.blit(txt[0] , (txt[1],txt[2]) )
-                continue
-            temp_texture, new_topleft = get_trans(txt[0], txt[5], txt[6], txt[3], (txt[1], txt[2]))
-            temp_texture.set_colorkey( temp_texture.get_at((0,0)) )
-            window.blit( temp_texture, new_topleft )
-
-        for obj in OTD.objects:
-            obj.draw(window)
-            
-        for anim in OTD.animations:
-            anim.draw(window)
-            
-            
-            
-            
-        OTD.clear()
+        if OTD_GAME.visible:
+            OTD_GAME.blit(window)
+        if OTD_UI.visible:
+            OTD_UI.blit(window)
+        if OTD_MENU.visible:
+            OTD_MENU.blit(window)
+        
+        if not OTD_GAME.freeze:
+            OTD_GAME.clear()
+        if not OTD_UI.freeze:
+            OTD_GAME.clear()
+        if not OTD_MENU.freeze:
+            OTD_GAME.clear()
                 
         
         wn.blit(get_trans_old(window, WIN_X, WIN_Y, 0), (0,0))
@@ -111,6 +103,8 @@ class Animation(objects_parent):
         pass
 
 class objects_to_draw_class:
+    visible: bool = False
+    freeze: bool = False
     def __init__(self):
         self.textures: list[tuple[pygame.Surface, int, int, float, int, int, int]] = list()
         self.objects: list[objects_parent] = list()
@@ -157,6 +151,26 @@ class objects_to_draw_class:
                 return
             if not anim.stop:
                 anim.act()
+    
+    def blit(self, surface: pygame.Surface):
+        for layer in self.layers:
+            surface.blit( layer[0], (layer[1], layer[2]) )
+
+        for txt in self.textures:
+            txt[0].set_alpha(txt[4])
+            if txt[3]==0 and txt[5]==0 and txt[6]==0:
+                surface.blit(txt[0] , (txt[1],txt[2]) )
+                continue
+            temp_texture, new_topleft = get_trans(txt[0], txt[5], txt[6], txt[3], (txt[1], txt[2]))
+            temp_texture.set_colorkey( temp_texture.get_at((0,0)) )
+            surface.blit( temp_texture, new_topleft )
+
+        for obj in self.objects:
+            obj.draw(surface)
+            
+        for anim in self.animations:
+            anim.draw(surface)
+        
 
 
     def clear(self):
@@ -168,15 +182,24 @@ class objects_to_draw_class:
             if anim.done:
                 self.animations.remove(anim)
 
-OTD = objects_to_draw_class()
+OTD_GAME = objects_to_draw_class()
+OTD_UI = objects_to_draw_class()
+OTD_MENU = objects_to_draw_class()
+
+
+def preprepare():
+    global run, OTD_GAME, OTD_MENU, OTD_UI
+    OTD_MENU.visible = True
+
 
 def stop():
     global run
     run = False
 
 def start(prepare: FunctionType, act: FunctionType):
-    global run, TICK, TICK_COUNTER
+    global run, TICK, TICK_COUNTER, OTD_GAME, OTD_MENU, OTD_UI
     
+    preprepare()
     draw_thread = Thread(target = window_update, args=(), daemon=True)
     draw_thread.start()
     prepare()
@@ -184,7 +207,12 @@ def start(prepare: FunctionType, act: FunctionType):
         while run:
             clock.tick(TICK)
             TICK_COUNTER = (TICK_COUNTER+1)%TICK
-            OTD.update_anims()
+            if not OTD_GAME.freeze:
+                OTD_GAME.update_anims()
+            if not OTD_UI.freeze:
+                OTD_UI.update_anims()
+            if not OTD_MENU.freeze:
+                OTD_MENU.update_anims()
             act()
 
             

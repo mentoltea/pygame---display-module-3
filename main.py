@@ -3,7 +3,8 @@ import pygame
 import math
 dsp.init()
 
-from display import OTD, run, RES_FORM
+from display import OTD_MENU, OTD_UI, run, RES_FORM
+from display import OTD_GAME as OTD
 
 class MyAnim(dsp.Animation):
     def __init__(self, object, radius, count):
@@ -48,6 +49,7 @@ def prepare():
     global sprite, x, y
     sprite = sprite_obj(pygame.image.load("sprite.png"), 0, 0)
     spriteAnim = MyAnim(sprite, 100, 7)
+    OTD.visible = True
     OTD.add_anim(spriteAnim)
 
 def act():
